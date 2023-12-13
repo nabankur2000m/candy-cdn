@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Data</title>
+</head>
+<link rel="stylesheet" href="styles.css">
+<body>
+
+    <form id="productForm">
+        <label for="productName">Candy Name:</label>
+        <input type="text" id="productName" required>
+        
+        <label for="productDescription">Description:</label>
+        <input type="text" id="productDescription" required></textarea>
+
+        <label for="productPrice">Price:</label>
+        <input type="number" id="productPrice" min="0.01" step="0.01" required>
+
+        <label for="productQuantity">Quantity:</label>
+        <input type="number" id="productQuantity" min="1" required>
+        <button type="button" onclick="submitForm()">Add Candy</button>
+    </form>
+
+    <div id="productDetails" style="display:none;">
+        <p>Name: <span id="productNameDisplay"></span></p>
+        <p>Description: <span id="productDescriptionDisplay"></span></p>
+        <p>Price: <span id="productPriceDisplay"></span></p>
+        <p>Quantity: <span id="productQuantityDisplay"></span></p>
+        <button onclick="buyOne()">Buy 1</button>
+        <button onclick="buyTwo()">Buy 2</button>
+        <button onclick="buyThree()">Buy 3</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+    <script>
+        window.onload = function () {
+            axios.get("https://crudcrud.com/api/30150564426943389b3957e1148e7caa/candy")
+                .then((response) => {
+                    const candyData = response.data;
+                    if (candyData.length > 0) {
+                        const latestCandy = candyData[candyData.length - 1];
+                        displayCandyDetails(latestCandy);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+
+        function displayCandyDetails(candy) {
+            document.getElementById('productNameDisplay').textContent = candy.name;
+            document.getElementById('productDescriptionDisplay').textContent = candy.description;
+            document.getElementById('productPriceDisplay').textContent = candy.price;
+            document.getElementById('productQuantityDisplay').textContent = candy.quantity;
+
+            document.getElementById('productDetails').dataset.candyId = candy._id;
+            document.getElementById('productDetails').style.display = 'block';
+        }
+
+        function submitForm() {
+            var name = document.getElementById('productName').value;
+            var description = document.getElementById('productDescription').value;
+            var price = document.getElementById('productPrice').value;
+            var quantity = document.getElementById('productQuantity').value;
+
+            const candy = { name, description, price, quantity };
+
+            axios.post("https://crudcrud.com/api/30150564426943389b3957e1148e7caa/candy", candy)
+                .then((response) => {
+                    console.log(response);
+                    const candyId = response.data._id;
+                    document.getElementById('productDetails').dataset.candyId = candyId;
+                    displayCandyDetails(response.data);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productQuantity').value = '';
+        }
+
+        function updateQuantity(updatedQuantity) {
+            var candyId = document.getElementById('productDetails').dataset.candyId;
+            var candyUpdate = { quantity: updatedQuantity };
+
+            axios.put(`https://crudcrud.com/api/30150564426943389b3957e1148e7caa/candy/${candyId}`, candyUpdate)
+                .then((response) => {
+                    console.log(response);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+
+        function buyOne() {
+            var currentQuantity = parseInt(document.getElementById('productQuantityDisplay').textContent, 10);
+            if (currentQuantity > 0) {
+                var updatedQuantity = currentQuantity - 1;
+                document.getElementById('productQuantityDisplay').textContent = updatedQuantity;
+                updateQuantity(updatedQuantity);
+            }
+        }
+
+        function buyTwo() {
+            var currentQuantity = parseInt(document.getElementById('productQuantityDisplay').textContent, 10);
+            if (currentQuantity > 1) {
+                var updatedQuantity = currentQuantity - 2;
+                document.getElementById('productQuantityDisplay').textContent = updatedQuantity;
+                updateQuantity(updatedQuantity);
+            }
+        }
+
+        function buyThree() {
+            var currentQuantity = parseInt(document.getElementById('productQuantityDisplay').textContent, 10);
+            if (currentQuantity > 2) {
+                var updatedQuantity = currentQuantity - 3;
+                document.getElementById('productQuantityDisplay').textContent = updatedQuantity;
+                updateQuantity(updatedQuantity);
+            }
+        }
+    </script>
+
+</body>
+</html>
